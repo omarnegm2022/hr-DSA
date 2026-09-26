@@ -1,0 +1,99 @@
+To answer your title's question directly: **This code resembles Quick Sort far more than Merge Sort**, but conceptually it is neither—it is a **custom hybrid pre-pass**.
+
+Here is why your code leans toward Quick Sort, why it isn't standard Merge Sort or Quick Sort, and how standard implementations actually look.
+
+---
+
+## 1. Why it Leans Toward Quick Sort
+
+*
+**Pivot Usage:** The line `pivot_item = usr_lst.pop(ls_len//2)` extracts an element to partition around. Quick Sort is built on pivots; Merge Sort never uses pivots.
+
+
+* **Partitioning:** Splitting elements into `LHS` and `RHS` based on positional relationships to build `LHS + [pivot_item] + RHS` mimics Quick Sort's standard concatenation step (`quick_sort(left) + [pivot] + quick_sort(right)`).
+
+---
+
+## 2. Why It Isn't Standard Merge Sort or Quick Sort
+
+| Concept | Standard Merge Sort | Standard Quick Sort | Your Code |
+| --- | --- | --- | --- |
+| **Core Idea** | Split in half $\rightarrow$ Sort halves recursively $\rightarrow$ Merge
+
+ | Pick pivot $\rightarrow$ Partition elements around pivot $\rightarrow$ Sort sides recursively | Reshape into 2-element pairs $\rightarrow$ Sort pairs $\rightarrow$ Insert single pivot
+
+ |
+| **Pivots?** | <br>**No**
+
+ | **Yes** | <br>**Yes** (pops middle element)
+
+ |
+| **Pairing/Reshaping?** | No | No | <br>**Yes** (`np.reshape(-1, 2)`)
+
+ |
+| **Recursion?** | <br>**Yes** ($O(N \log N)$)
+
+ | **Yes** ($O(N \log N)$ average) | <br>**No** (Runs a single non-recursive pass)
+
+ |
+
+---
+
+## 3. Standard Implementations for Reference
+
+### Standard Recursive Quick Sort (Python)
+
+Quick Sort partitions elements **less than** and **greater than** a chosen pivot, then recursively sorts the sub-arrays:
+
+```python
+def quick_sort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+
+    # Recursively sort sub-arrays and concatenate
+    return quick_sort(left) + middle + quick_sort(right)
+
+print(quick_sort([5, 1, 3, 2, 4]))
+# Output: [1, 2, 3, 4, 5]
+
+```
+
+### Standard Recursive Merge Sort (Python)
+
+Merge Sort cleanly divides the list in half recursively without using any pivot or reshapes , then merges the sorted halves together using two pointers:
+
+```python
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+
+    mid = len(arr) // 2
+    left_half = merge_sort(arr[:mid])
+    right_half = merge_sort(arr[mid:])
+
+    return merge(left_half, right_half)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+    # Two-pointer merge pass
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            j += 1
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result
+
+print(merge_sort([5, 1, 3, 2, 4]))
+# Output: [1, 2, 3, 4, 5]
+
+```
